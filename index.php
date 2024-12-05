@@ -568,7 +568,110 @@ function finishGame(&$game, $conn) {
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
+.chat-container {
+    margin-top: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    overflow: hidden;
+}
 
+.chat-header {
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-messages {
+    height: 200px;
+    overflow-y: auto;
+    padding: 15px;
+    scroll-behavior: smooth;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 5px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    animation: messageSlide 0.3s ease-out;
+}
+
+.chat-message.game-event {
+    color: var(--accent);
+    font-style: italic;
+}
+
+.chat-message .time {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 5px;
+}
+
+.chat-message .username {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 20px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.chat-input button {
+    background: var(--accent);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chat-input button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes messageSlide {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
         .card.flipped {
             transform: rotateY(180deg);
         }
@@ -930,9 +1033,12 @@ function finishGame(&$game, $conn) {
                         <li>Double on any two cards</li>
                         <li>Split up to 3 times</li>
                     </ul>
+<iframe src="chats/chat.php" style="width: 100%; height: 600px; border: none;"></iframe>
                 </div>
             </div>
         </div>
+		<iframe src="http://jcmc.serveminecraft.net/widgets/purchaseCurrency/" style="width: 100%; height: 600px; border: none;"></iframe>
+
     </div>
 
     <!-- Sound Effects -->
@@ -940,7 +1046,6 @@ function finishGame(&$game, $conn) {
     <audio id="chipSound" src="data:audio/mp3;base64,[BASE64_CHIP_SOUND]" preload="auto"></audio>
     <audio id="winSound" src="data:audio/mp3;base64,[BASE64_WIN_SOUND]" preload="auto"></audio>
     <audio id="loseSound" src="data:audio/mp3;base64,[BASE64_LOSE_SOUND]" preload="auto"></audio>
-
     <script>
 class BlackjackGame {
     constructor() {
