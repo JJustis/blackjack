@@ -298,6 +298,8 @@ function finishGame(&$game, $conn) {
     }
     $stmt->execute();
 }
+
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -306,7 +308,8 @@ function finishGame(&$game, $conn) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
+    
+	<style>
         @property --gradient-angle {
             syntax: '<angle>';
             initial-value: 0deg;
@@ -320,27 +323,81 @@ function finishGame(&$game, $conn) {
             --danger: #e74c3c;
             --dark: #1a1a2e;
             --table: #27ae60;
-            
             --card-width: 140px;
             --card-height: 200px;
             --card-radius: 12px;
-            
             --glass-bg: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
         }
 
         * { box-sizing: border-box; }
 
+        /* Base Styles */
         body {
             margin: 0;
             min-height: 100vh;
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, var(--dark), #0f172a);
             color: white;
             overflow-x: hidden;
+            background: #0f0f1f;
         }
 
-        /* Post-processing effects */
+        /* Background Effects */
+        .starfield-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300vw;
+            height: 300vh;
+            transform: translate(-50%, -50%);
+            perspective: 1500px;
+            overflow: hidden;
+            z-index: -1;
+            background: radial-gradient(
+                ellipse at center,
+                #0a0a2a 0%,
+                #090921 40%,
+                #06061a 100%
+            );
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            left: 50%;
+            top: 50%;
+            will-change: transform;
+        }
+
+        .galaxy-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 255, 255, 0.2) 0%,
+                rgba(255, 255, 255, 0.15) 20%,
+                rgba(255, 255, 255, 0.1) 30%,
+                rgba(255, 255, 255, 0.05) 40%,
+                transparent 70%
+            );
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+
+        .spiral-arm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        /* Post Processing Effects */
         .post-processing {
             position: fixed;
             top: 0;
@@ -350,95 +407,7 @@ function finishGame(&$game, $conn) {
             pointer-events: none;
             z-index: 1000;
         }
-/* Particle Effects */
-.particle {
-    position: fixed;
-    pointer-events: none;
-    border-radius: 50%;
-    z-index: 9999;
-}
 
-/* Card Effects */
-@keyframes cardDeal {
-    0% {
-        transform: translate(-1000px, -500px) rotate(-720deg) scale(0.1);
-        opacity: 0;
-        filter: blur(10px);
-    }
-    100% {
-        transform: translate(0, 0) rotate(0) scale(1);
-        opacity: 1;
-        filter: blur(0);
-    }
-}
-
-@keyframes cardFlip {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(180deg); }
-}
-
-@keyframes cardHover {
-    0% { transform: translateY(0) rotate(0deg); filter: brightness(1); }
-    50% { transform: translateY(-10px) rotate(2deg); filter: brightness(1.2); }
-    100% { transform: translateY(0) rotate(0deg); filter: brightness(1); }
-}
-
-/* Chip Animation */
-@keyframes chipSpin {
-    0% { transform: rotateY(0deg) scale(1); }
-    50% { transform: rotateY(180deg) scale(1.1); }
-    100% { transform: rotateY(360deg) scale(1); }
-}
-
-/* Win Effects */
-@keyframes winPulse {
-    0% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.1); filter: brightness(1.5); }
-    100% { transform: scale(1); filter: brightness(1); }
-}
-
-/* Table Effects */
-.game-table {
-    position: relative;
-    overflow: hidden;
-}
-
-.table-light {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(
-        circle at var(--x, 50%) var(--y, 50%),
-        rgba(255,255,255,0.1) 0%,
-        transparent 50%
-    );
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
-
-/* Apply these new styles */
-.card {
-    animation: cardDeal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.card:hover {
-    animation: cardHover 3s infinite ease-in-out;
-}
-
-.chip {
-    transform-style: preserve-3d;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.chip:hover {
-    animation: chipSpin 1s ease-out;
-}
-
-.win-animation {
-    animation: winPulse 1s ease-in-out;
-}
         .noise {
             position: absolute;
             top: 0;
@@ -459,18 +428,7 @@ function finishGame(&$game, $conn) {
             background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.5) 150%);
         }
 
-        .scanlines {
-            background: linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0) 0%,
-                rgba(0, 0, 0, 0.2) 50%,
-                rgba(0, 0, 0, 0) 100%
-            );
-            background-size: 100% 4px;
-            opacity: 0.1;
-        }
-
-        /* Main container */
+        /* Layout */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -479,7 +437,13 @@ function finishGame(&$game, $conn) {
             z-index: 1;
         }
 
-        /* Header styles */
+        .game-area {
+            display: flex;
+            gap: 30px;
+            perspective: 1000px;
+        }
+
+        /* Header */
         .header {
             text-align: center;
             padding: 20px;
@@ -503,25 +467,10 @@ function finishGame(&$game, $conn) {
             filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.3));
         }
 
-        @keyframes gradient-rotate {
-            0% { --gradient-angle: 0deg; }
-            100% { --gradient-angle: 360deg; }
-        }
-
-        /* Game area with glass morphism */
-        .game-area {
-            display: flex;
-            gap: 30px;
-            perspective: 1000px;
-        }
-
+        /* Game Table */
         .game-table {
             flex: 1;
-            background: linear-gradient(
-                135deg,
-                rgba(39, 174, 96, 0.8),
-                rgba(33, 154, 82, 0.8)
-            );
+            background: linear-gradient(135deg, rgba(39, 174, 96, 0.8), rgba(33, 154, 82, 0.8));
             border-radius: 25px;
             padding: 40px;
             box-shadow: 
@@ -530,152 +479,477 @@ function finishGame(&$game, $conn) {
             backdrop-filter: blur(10px);
             transform-style: preserve-3d;
             transform: rotateX(5deg);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Card styles with 3D effects */
+        .table-light {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at var(--x, 50%) var(--y, 50%),
+                rgba(255,255,255,0.1) 0%,
+                transparent 50%
+            );
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Hand Areas */
+        .hand-area {
+            min-height: 220px;
+            padding: 25px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            perspective: 1000px;
+        }
+
+        .active-hand {
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        /* Enhanced Card Styles */
         .card {
             width: var(--card-width);
             height: var(--card-height);
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
+            transform: translateZ(20px);
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+            will-change: transform, filter;
         }
 
+        /* Card Face Base */
         .card-face {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
             border-radius: var(--card-radius);
-            box-shadow: 
-                0 5px 15px rgba(0,0,0,0.3),
-                inset 0 0 50px rgba(255,255,255,0.1);
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.5em;
+            font-weight: bold;
+            transform-style: preserve-3d;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        /* Card Front Design */
+        .card-front {
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #ffffff, #f8f8f8);
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.05),
+                inset 0 0 5px rgba(255,255,255,0.8);
+        }
+
+        /* Card Back Pattern */
         .card-back {
             transform: rotateY(180deg);
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            background-image: 
-                linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
-                linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
-                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background: 
+                linear-gradient(135deg, #c0392b, #e74c3c);
+            color: transparent;
         }
-.chat-container {
-    margin-top: 20px;
-    background: rgba(0, 0, 0, 0.3);
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(255,255,255,0.1) 0px,
+                    rgba(255,255,255,0.1) 1px,
+                    transparent 1px,
+                    transparent 5px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    rgba(255,255,255,0.1) 0px,
+                    rgba(255,255,255,0.1) 1px,
+                    transparent 1px,
+                    transparent 5px
+                );
+            mix-blend-mode: overlay;
+        }
+
+        /* Card Front Graphics */
+        .card-content {
+            position: relative;
+            width: 90%;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            transform: translateZ(1px);
+        }
+
+        .card-corner {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+            font-size: 0.6em;
+        }
+
+        .card-corner.top-left {
+            top: 8px;
+            left: 8px;
+        }
+
+        .card-corner.bottom-right {
+            bottom: 8px;
+            right: 8px;
+            transform: rotate(180deg);
+        }
+
+        .card-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+        }
+
+        /* Card Toss Animation */
+        @keyframes cardToss {
+            0% {
+                transform: 
+                    translate(-1000px, -500px) 
+                    rotate3d(1, 1, 1, 720deg) 
+                    scale(0.1)
+                    translateZ(-100px);
+                opacity: 0;
+                filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+            }
+            50% {
+                transform: 
+                    translate(0, -100px) 
+                    rotate3d(1, 0.5, 0.2, 180deg) 
+                    scale(1.1)
+                    translateZ(100px);
+                opacity: 1;
+                filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
+            }
+            75% {
+                transform: 
+                    translate(0, 20px) 
+                    rotate3d(1, 0.2, 0.1, 45deg) 
+                    scale(1.05)
+                    translateZ(50px);
+                filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+            }
+            100% {
+                transform: 
+                    translate(0, 0) 
+                    rotate3d(0, 0, 0, 0) 
+                    scale(1)
+                    translateZ(20px);
+                opacity: 1;
+                filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+            }
+        }
+
+        /* Card Hover Effects */
+        .card:hover {
+            transform: 
+                translateZ(40px) 
+                scale(1.1) 
+                rotateX(-5deg);
+            filter: 
+                drop-shadow(0 20px 30px rgba(0,0,0,0.5))
+                brightness(1.1);
+            z-index: 10;
+        }
+
+        /* Shadow on Table */
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            width: 90%;
+            height: 20px;
+            background: rgba(0,0,0,0.3);
+            filter: blur(15px);
+            transform: translateX(-50%) rotateX(60deg) scale(0.8);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            animation: shadowAppear 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+        }
+
+        @keyframes shadowAppear {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) rotateX(60deg) scale(0.5);
+            }
+            100% {
+                opacity: 0.4;
+                transform: translateX(-50%) rotateX(60deg) scale(0.8);
+            }
+        }
+.slots-ad {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(0,0,0,0.3);
     border-radius: 15px;
-    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-.chat-header {
-    background: linear-gradient(45deg, var(--primary), var(--secondary));
-    padding: 10px 15px;
+.ad-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-.chat-messages {
-    height: 200px;
-    overflow-y: auto;
-    padding: 15px;
-    scroll-behavior: smooth;
+.ad-header h2 {
+    margin: 0;
+    background: linear-gradient(45deg, #ffd700, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.8em;
 }
 
-.chat-messages::-webkit-scrollbar {
-    width: 5px;
+.ad-header i {
+    font-size: 1.5em;
+    color: #ffd700;
+    animation: pulse 2s infinite;
 }
 
-.chat-messages::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 5px;
-}
-
-.chat-message {
-    margin-bottom: 10px;
-    animation: messageSlide 0.3s ease-out;
-}
-
-.chat-message.game-event {
-    color: var(--accent);
-    font-style: italic;
-}
-
-.chat-message .time {
-    font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.5);
-    margin-right: 5px;
-}
-
-.chat-message .username {
-    font-weight: bold;
-    color: var(--accent);
-}
-
-.chat-input {
+.ad-content {
     display: flex;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.2);
-    gap: 10px;
+    gap: 30px;
+    align-items: center;
 }
 
-.chat-input input {
+.preview-container {
+    flex: 2;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.2);
+}
+
+.ad-text {
     flex: 1;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 12px;
-    border-radius: 20px;
-    color: white;
-    transition: all 0.3s ease;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.chat-input input:focus {
-    outline: none;
-    border-color: var(--accent);
-    background: rgba(255, 255, 255, 0.15);
+.ad-text h3 {
+    color: #ffd700;
+    margin-top: 0;
 }
 
-.chat-input button {
-    background: var(--accent);
+.ad-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.ad-text li {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: rgba(255,255,255,0.9);
+}
+
+.ad-text .btn {
+    margin-top: 20px;
+    width: 100%;
+    font-size: 1.2em;
+    background: linear-gradient(45deg, #ffd700, #ff6b6b);
     border: none;
-    border-radius: 20px;
-    padding: 8px 15px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    animation: glow 2s infinite;
 }
 
-.chat-input button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 10px #ffd700; }
+    50% { box-shadow: 0 0 20px #ffd700, 0 0 30px #ff6b6b; }
 }
 
-@keyframes messageSlide {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
-        .card.flipped {
-            transform: rotateY(180deg);
+        /* Metallic Sheen Effect */
+        .card-front::after,
+        .card-back::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: linear-gradient(
+                45deg,
+                transparent 0%,
+                rgba(255,255,255,0.1) 45%,
+                rgba(255,255,255,0.2) 50%,
+                rgba(255,255,255,0.1) 55%,
+                transparent 100%
+            );
+            transform: rotate(45deg);
+            animation: sheen 5s linear infinite;
+            pointer-events: none;
         }
-		/* Sidebar with glass morphism */
+
+        @keyframes sheen {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+		
+/* Button Glow Effects */
+.btn {
+    position: relative;
+    overflow: visible;
+}
+
+/* High Confidence Glow */
+.btn.glow-high {
+    animation: pulse-green 2s infinite;
+    box-shadow: 
+        0 0 10px #4CAF50,
+        0 0 20px #4CAF50,
+        0 0 30px #4CAF50;
+}
+
+/* Medium Confidence Glow */
+.btn.glow-medium {
+    animation: pulse-yellow 2s infinite;
+    box-shadow: 
+        0 0 10px #FFC107,
+        0 0 20px #FFC107,
+        0 0 30px #FFC107;
+}
+
+/* Low Confidence Glow */
+.btn.glow-low {
+    animation: pulse-red 2s infinite;
+    box-shadow: 
+        0 0 10px #F44336,
+        0 0 20px #F44336,
+        0 0 30px #F44336;
+}
+
+/* Confidence Display */
+.confidence-display {
+    position: absolute;
+    top: -20px;
+    right: -10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    animation: bounce 1s infinite;
+}
+
+/* AI Thinking Indicator */
+.ai-indicator {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    color: #4CAF50;
+    opacity: 0.8;
+    animation: thinking 1.5s infinite;
+}
+
+/* Animations */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 10px #4CAF50; }
+    50% { box-shadow: 0 0 20px #4CAF50, 0 0 30px #4CAF50; }
+    100% { box-shadow: 0 0 10px #4CAF50; }
+}
+
+@keyframes pulse-yellow {
+    0% { box-shadow: 0 0 10px #FFC107; }
+    50% { box-shadow: 0 0 20px #FFC107, 0 0 30px #FFC107; }
+    100% { box-shadow: 0 0 10px #FFC107; }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 10px #F44336; }
+    50% { box-shadow: 0 0 20px #F44336, 0 0 30px #F44336; }
+    100% { box-shadow: 0 0 10px #F44336; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes thinking {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+.security-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.security-content {
+    background: linear-gradient(135deg, #1a1a2e, #152238);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+}
+
+.key-display {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1.2em;
+    margin: 20px 0;
+    color: #64B5F6;
+    word-break: break-all;
+    border: 1px solid rgba(100,181,246,0.3);
+    text-shadow: 0 0 10px rgba(100,181,246,0.5);
+}
+
+.security-content .btn {
+    margin: 10px;
+    min-width: 150px;
+}
+        /* Sidebar */
         .sidebar {
             width: 350px;
             background: var(--glass-bg);
@@ -683,16 +957,50 @@ function finishGame(&$game, $conn) {
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 25px;
-            transform-style: preserve-3d;
             animation: float 6s ease-in-out infinite;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 25px;
+            background: linear-gradient(to bottom, #8B4513, #654321);
+            border-radius: 15px;
+            box-shadow: 
+                0 5px 15px rgba(0,0,0,0.3),
+                0 1px 2px rgba(255,255,255,0.1) inset;
+            border: 2px solid #A0522D;
+            position: relative;
         }
 
-        /* Chip styles with 3D effects */
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 
+                0 5px 15px rgba(0,0,0,0.2),
+                0 1px 2px rgba(255,255,255,0.1) inset;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Chips */
         .chip-rack {
             display: flex;
             gap: 15px;
@@ -733,131 +1041,56 @@ function finishGame(&$game, $conn) {
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        .chip:hover {
-            transform: translateY(-5px) rotateX(20deg);
+        /* Animations */
+        @keyframes gradient-rotate {
+            0% { --gradient-angle: 0deg; }
+            100% { --gradient-angle: 360deg; }
         }
 
-        /* Control buttons with neon effect */
-        .controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 25px;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            background: var(--glass-bg);
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--glass-border);
-            color: white;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-
-        .btn-primary { --btn-color: var(--primary); }
-        .btn-secondary { --btn-color: var(--secondary); }
-        .btn-danger { --btn-color: var(--danger); }
-
-        .btn:hover {
-            box-shadow: 
-                0 0 10px var(--btn-color),
-                0 0 20px var(--btn-color),
-                0 0 40px var(--btn-color);
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-        }
-
-        /* Hand areas with lighting effects */
-        .hand-area {
-            min-height: 220px;
-            padding: 25px;
-            margin: 20px 0;
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hand-area::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-            transform: rotate(45deg);
-            pointer-events: none;
-        }
-
-        .active-hand {
-            box-shadow: 0 0 20px var(--accent);
-        }
-
-        /* Card animations */
-        @keyframes dealCard {
+        @keyframes cardToss {
             0% {
-                transform: 
-                    translate(-1000px, -500px) 
-                    rotate(-720deg) 
-                    scale(0.5);
+                transform: translate(-1000px, -200px) rotate3d(1, 1, 1, 720deg) scale(0.1);
                 opacity: 0;
             }
-            100% {
-                transform: 
-                    translate(0, 0) 
-                    rotate(0deg) 
-                    scale(1);
+            60% {
+                transform: translate(0, -50px) rotate3d(1, 0.5, 0.2, 180deg) scale(1.1);
                 opacity: 1;
+            }
+            80% {
+                transform: translate(0, 20px) rotate3d(1, 0.2, 0.1, 45deg) scale(1.05);
+            }
+            100% {
+                transform: translate(0, 0) rotate3d(0, 0, 0, 0) scale(1);
             }
         }
 
-        @keyframes cardHover {
-            0%, 100% { transform: translateY(0) rotate(0); }
-            50% { transform: translateY(-10px) rotate(2deg); }
+        @keyframes metallicSheen {
+            0% { transform: translateX(-200%) translateY(-200%); }
+            100% { transform: translateX(200%) translateY(200%); }
         }
 
-        .card {
-            animation: dealCard 0.6s cubic-bezier(0.17, 0.67, 0.83, 0.67) backwards;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
-        .card:hover {
-            animation: cardHover 2s ease-in-out infinite;
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Message styles */
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        /* Messages */
         .message {
             padding: 15px;
             border-radius: 10px;
             text-align: center;
             font-weight: bold;
-            position: relative;
-            overflow: hidden;
+            margin: 20px 0;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             animation: messageSlide 0.3s ease-out;
@@ -868,7 +1101,7 @@ function finishGame(&$game, $conn) {
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Stats display */
+              /* Stats display */
         .stats {
             display: flex;
             gap: 15px;
@@ -890,8 +1123,150 @@ function finishGame(&$game, $conn) {
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+        /* Input Groups */
+        .input-group {
+            margin-bottom: 15px;
+        }
 
-        /* Loading overlay */
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            color: white;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 5px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        .chat-message.game-event {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .chat-message .time {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 5px;
+        }
+
+        .chat-message .username {
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .chat-input button {
+            background: var(--accent);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Rules Section */
+        .rules {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .rules h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        .rules ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .rules li {
+            margin: 5px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Loading Overlay */
         .loading {
             position: fixed;
             top: 0;
@@ -918,6 +1293,42 @@ function finishGame(&$game, $conn) {
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Button States and Effects */
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn:not(:disabled):hover {
+            box-shadow: 
+                0 0 10px var(--btn-color),
+                0 0 20px var(--btn-color),
+                0 0 40px var(--btn-color);
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn-primary { --btn-color: var(--primary); }
+        .btn-secondary { --btn-color: var(--secondary); }
+        .btn-danger { --btn-color: var(--danger); }
     </style>
 </head>
 <body>
@@ -927,7 +1338,9 @@ function finishGame(&$game, $conn) {
         <div class="scanlines"></div>
         <div class="vignette"></div>
     </div>
-
+    <div class="starfield-container" id="starfield">
+        <div class="galaxy-core"></div>
+    </div>
     <div class="container">
         <div class="header">
             <h1>
@@ -979,6 +1392,28 @@ function finishGame(&$game, $conn) {
                         <i class="fas fa-code-branch"></i> Split
                     </button>
                 </div>
+				<div class="slots-ad">
+    <div class="ad-header">
+        <i class="fas fa-slot-machine"></i>
+        <h2>Try Your Luck at Epic Slots!</h2>
+        <i class="fas fa-slot-machine"></i>
+    </div>
+    <div class="ad-content">
+        <div class="preview-container">
+            <iframe src="http://jcmc.serveminecraft.net/games/slots/" style="width: 100%; height: 300px; border: none;"></iframe>
+        </div>
+        <div class="ad-text">
+            <h3>🎰 Epic Slots Features:</h3>
+            <ul>
+                <li>⭐ Multiple Exciting Themes</li>
+                <li>💰 Massive Jackpots</li>
+                <li>🎉 Daily Bonuses</li>
+                <li>🔥 Progressive Multipliers</li>
+            </ul>
+            <a href="http://jcmc.serveminecraft.net/games/slots/" class="btn btn-primary">Play Now!</a>
+        </div>
+    </div>
+</div>
             </div>
 
             <div class="sidebar">
@@ -1033,20 +1468,225 @@ function finishGame(&$game, $conn) {
                         <li>Double on any two cards</li>
                         <li>Split up to 3 times</li>
                     </ul>
-<iframe src="chats/chat.php" style="width: 100%; height: 600px; border: none;"></iframe>
-                </div>
+
+                </div><iframe src="chats/chat.php" style="width: 100%; height: 600px; border: none;"></iframe>
             </div>
         </div>
-		<iframe src="http://jcmc.serveminecraft.net/widgets/purchaseCurrency/" style="width: 100%; height: 600px; border: none;"></iframe>
+		
 
     </div>
-
+<iframe src="http://jcmc.serveminecraft.net/widgets/purchaseCurrency/" style="width: 100%; height: 1200px; border: none;"></iframe>
     <!-- Sound Effects -->
     <audio id="cardSound" src="data:audio/mp3;base64,[BASE64_CARD_SOUND]" preload="auto"></audio>
     <audio id="chipSound" src="data:audio/mp3;base64,[BASE64_CHIP_SOUND]" preload="auto"></audio>
     <audio id="winSound" src="data:audio/mp3;base64,[BASE64_WIN_SOUND]" preload="auto"></audio>
     <audio id="loseSound" src="data:audio/mp3;base64,[BASE64_LOSE_SOUND]" preload="auto"></audio>
     <script>
+        class SpiralArm {
+            constructor(container, numStars, angleOffset, armIndex) {
+                this.container = container;
+                this.armElement = document.createElement('div');
+                this.armElement.className = 'spiral-arm';
+                this.armElement.style.transform = `rotate(${angleOffset}rad)`;
+                container.appendChild(this.armElement);
+                
+                this.createStars(numStars, maxRadius);
+                
+                // Use CSS animation for rotation
+                this.armElement.style.animation = `rotate ${30 + armIndex * 10}s linear infinite`;
+            }
+
+            createStars(numStars, maxRadius) {
+                const fragment = document.createDocumentFragment();
+                const colors = ['#fff', '#ffd700'];
+                
+                for (let i = 0; i < numStars; i++) {
+                    const progress = i / numStars;
+                    const radius = maxRadius * Math.pow(progress, 0.5);
+                    const angle = progress * Math.PI * 4; // Tighter spiral
+                    
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    const z = (Math.random() - 0.5) * 1000 * (1 - progress);
+                    
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+                    star.style.width = `${(2 - progress)}px`;
+                    star.style.height = `${(2 - progress)}px`;
+                    star.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    star.style.opacity = 0.5 + Math.random() * 0.5;
+                    
+                    fragment.appendChild(star);
+                }
+                
+                this.armElement.appendChild(fragment);
+            }
+        }
+
+        class Galaxy {
+            constructor() {
+                this.container = document.getElementById('starfield');
+                this.arms = [];
+                
+                // Calculate optimal size
+                const screenSize = Math.max(window.innerWidth, window.innerHeight);
+                window.maxRadius = screenSize * 0.6; // Make it bigger
+                
+                this.initGalaxy();
+            }
+
+            initGalaxy() {
+                // Just 2 main arms
+                for (let i = 0; i < 2; i++) {
+                    const angleOffset = (i * Math.PI);
+                    const arm = new SpiralArm(
+                        this.container,
+                        200, // Fewer stars for better performance
+                        angleOffset,
+                        i
+                    );
+                    this.arms.push(arm);
+                }
+
+                // Add fewer center stars
+                this.addCenterStars(200);
+            }
+
+            addCenterStars(numStars) {
+                const centerContainer = document.createElement('div');
+                centerContainer.className = 'spiral-arm';
+                const fragment = document.createDocumentFragment();
+                
+                for (let i = 0; i < numStars; i++) {
+                    const radius = Math.random() * maxRadius * 0.2;
+                    const angle = Math.random() * Math.PI * 2;
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    const z = (Math.random() - 0.5) * 200;
+                    
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+                    star.style.width = '2px';
+                    star.style.height = '2px';
+                    star.style.background = '#fff';
+                    star.style.opacity = 0.7 + Math.random() * 0.3;
+                    
+                    fragment.appendChild(star);
+                }
+                
+                centerContainer.appendChild(fragment);
+                this.container.appendChild(centerContainer);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const galaxy = new Galaxy();
+
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    galaxy.container.innerHTML = '';
+                    galaxy.container.appendChild(document.createElement('div')).className = 'galaxy-core';
+                    galaxy.arms = [];
+                    galaxy.initGalaxy();
+                }, 250);
+            });
+        });
+    </script>
+    <script>
+	class SecurityHandler {
+    constructor(game) {
+        this.game = game;
+        this.securityKey = null;
+    }
+
+    async handleLogin(username) {
+        try {
+            const response = await fetch('security.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'createSession',
+                    username: username
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show security key dialog
+                this.showSecurityKeyDialog(data.security_key);
+                return true;
+            } else {
+                this.game.showMessage(data.message, 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Security error:', error);
+            this.game.showMessage('Failed to create secure session', 'error');
+            return false;
+        }
+    }
+
+    showSecurityKeyDialog(key) {
+        const dialog = document.createElement('div');
+        dialog.className = 'security-dialog';
+        dialog.innerHTML = `
+            <div class="security-content">
+                <h2>🔐 Security Key Generated</h2>
+                <p>IMPORTANT: Save this security key in a safe place. You will need it to access your account in the future:</p>
+                <div class="key-display">${key}</div>
+                <button id="copyKey" class="btn btn-primary">
+                    <i class="fas fa-copy"></i> Copy Key
+                </button>
+                <button id="confirmKey" class="btn btn-success">
+                    <i class="fas fa-check"></i> I've Saved It
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        // Add copy functionality
+        document.getElementById('copyKey').addEventListener('click', () => {
+            navigator.clipboard.writeText(key);
+            this.game.showMessage('Security key copied to clipboard', 'success');
+        });
+
+        // Add confirmation handling
+        document.getElementById('confirmKey').addEventListener('click', () => {
+            dialog.remove();
+            this.game.showMessage('Security key saved. Keep it safe!', 'success');
+        });
+    }
+
+    async validateSecurityKey(username, key) {
+        try {
+            const response = await fetch('security.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'validateSession',
+                    username: username,
+                    security_key: key
+                })
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Validation error:', error);
+            return { success: false, message: 'Failed to validate security key' };
+        }
+    }
+}
 class BlackjackGame {
     constructor() {
         // Core game state
@@ -1304,18 +1944,95 @@ renderHands(state) {
     }
 }
 renderCard(container, card, index) {
-    if (!card || typeof card !== 'object') return;
+        if (!card || typeof card !== 'object') return;
 
-    const cardElement = document.createElement('div');
-    cardElement.className = `card ${card.isRed ? 'red' : ''}`;
-    cardElement.style.animationDelay = `${index * 0.2}s`;
+        const cardElement = document.createElement('div');
+        cardElement.className = `card ${card.isRed ? 'red' : ''}`;
+        cardElement.style.animationDelay = `${index * 0.2}s`;
 
-    // Create the card content
-    const displayText = card.face ? `${card.face}${card.suit}` : `${card.display || ''}${card.suit || ''}`;
-    cardElement.textContent = displayText;
+        // Create front face with enhanced graphics
+        const frontFace = document.createElement('div');
+        frontFace.className = 'card-face card-front';
 
-    container.appendChild(cardElement);
-}
+        // Add card content structure
+        const content = document.createElement('div');
+        content.className = 'card-content';
+
+        // Top left corner
+        const topLeft = document.createElement('div');
+        topLeft.className = 'card-corner top-left';
+        topLeft.innerHTML = `
+            <span>${card.face}</span>
+            <span>${card.suit}</span>
+        `;
+
+        // Center symbol
+        const center = document.createElement('div');
+        center.className = 'card-center';
+        center.innerHTML = `${card.suit}`;
+
+        // Bottom right corner (rotated)
+        const bottomRight = document.createElement('div');
+        bottomRight.className = 'card-corner bottom-right';
+        bottomRight.innerHTML = `
+            <span>${card.face}</span>
+            <span>${card.suit}</span>
+        `;
+
+        content.appendChild(topLeft);
+        content.appendChild(center);
+        content.appendChild(bottomRight);
+        frontFace.appendChild(content);
+
+        // Create back face with pattern
+        const backFace = document.createElement('div');
+        backFace.className = 'card-face card-back';
+
+        // Add faces to card
+        cardElement.appendChild(frontFace);
+        cardElement.appendChild(backFace);
+
+        // Add to container
+        container.appendChild(cardElement);
+
+        // Add dynamic shadow effect based on mouse movement
+        this.addCardShadowEffect(cardElement);
+    }
+
+    addCardShadowEffect(cardElement) {
+        const table = document.querySelector('.game-table');
+        
+        table.addEventListener('mousemove', (e) => {
+            const rect = cardElement.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const deltaX = (e.clientX - centerX) / (table.clientWidth / 2);
+            const deltaY = (e.clientY - centerY) / (table.clientHeight / 2);
+            
+            // Calculate rotation based on mouse position
+            const rotateX = deltaY * -10;
+            const rotateY = deltaX * 10;
+            
+            // Apply dynamic transform
+            cardElement.style.transform = `
+                translateZ(20px)
+                rotateX(${rotateX}deg)
+                rotateY(${rotateY}deg)
+            `;
+
+            // Update shadow position
+            const shadowDistance = Math.min(Math.abs(deltaX * 30), 40);
+            const shadowX = deltaX * 20;
+            cardElement.style.filter = `drop-shadow(${shadowX}px ${shadowDistance}px ${shadowDistance/2}px rgba(0,0,0,0.4))`;
+        });
+
+        // Reset on mouse leave
+        table.addEventListener('mouseleave', () => {
+            cardElement.style.transform = 'translateZ(20px)';
+            cardElement.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))';
+        });
+    }
 
     renderDealerHand(hand) {
         this.ui.dealerHand.innerHTML = '';
@@ -1570,6 +2287,7 @@ class UIEffects {
         setTimeout(() => element.classList.remove('win-animation'), 1000);
     }
 }
+
 // Initialize game when document loads
 document.addEventListener('DOMContentLoaded', () => new BlackjackGame());
     </script>
