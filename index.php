@@ -1400,7 +1400,7 @@ function finishGame(&$game, $conn) {
     </div>
     <div class="ad-content">
         <div class="preview-container">
-            <iframe src="http://jcmc.serveminecraft.net/games/slots/" style="width: 100%; height: 300px; border: none;"></iframe>
+            <iframe src="http://jcmc.serveminecraft.net/games/slots/" style="width: 100%; height: 800px; border: none;"></iframe>
         </div>
         <div class="ad-text">
             <h3>🎰 Epic Slots Features:</h3>
@@ -1470,6 +1470,111 @@ function finishGame(&$game, $conn) {
                     </ul>
 
                 </div><iframe src="chats/chat.php" style="width: 100%; height: 600px; border: none;"></iframe>
+<!-- Add below chat iframe in sidebar -->
+<div class="market-ad">
+    <div class="ad-header">
+        <i class="fas fa-coins"></i>
+        <h2>CyberCoin II Market</h2>
+        <span class="live-badge">Now Live!</span>
+    </div>
+
+    <div class="exchange-rates">
+        <h3><i class="fas fa-exchange-alt"></i> Exchange Rates</h3>
+        <p class="rate-main">5000 CCII ↔ 1000 EXP</p>
+        <p class="rate-fiat">Rate: $0.00001 per CCII</p>
+    </div>
+
+    <ul class="benefits">
+        <li><i class="fas fa-check-circle"></i> Trade CCII for EXP to play Blackjack</li>
+        <li><i class="fas fa-check-circle"></i> Instant transactions, no waiting</li>
+        <li><i class="fas fa-check-circle"></i> Own tradeable cryptocurrency</li>
+    </ul>
+
+    <a href="http://jcmc.serveminecraft.net/cybercoin/shop.php" class="market-btn">Visit Crypto Market</a>
+</div>
+
+<style>
+.market-ad {
+    background: linear-gradient(135deg, #1a1a2e, #152238);
+    border: 1px solid #3498db;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    color: white;
+}
+
+.ad-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.ad-header h2 {
+    color: #3498db;
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.live-badge {
+    background: #2ecc71;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+}
+
+.exchange-rates {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.rate-main {
+    font-size: 1.2em;
+    color: #2ecc71;
+    margin: 10px 0;
+}
+
+.rate-fiat {
+    color: #95a5a6;
+    font-size: 0.9em;
+}
+
+.benefits {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.benefits li {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.benefits i {
+    color: #2ecc71;
+}
+
+.market-btn {
+    display: block;
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.market-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+</style>
             </div>
         </div>
 		
